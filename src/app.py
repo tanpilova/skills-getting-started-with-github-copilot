@@ -97,16 +97,29 @@ def signup_for_activity(activity_name: str, email: str):
     # Get the specific activity
     activity = activities[activity_name]
 
-# Add student if already not preset
+
+    # Add student if not already present
     if email in activity["participants"]:
         raise HTTPException(status_code=400, detail="Student already signed up for this activity")
-
 
     # Check if activity is full
     if len(activity["participants"]) >= activity["max_participants"]:
         raise HTTPException(status_code=400, detail="Activity is full")
-        activity["participants"].append(email)
 
+    activity["participants"].append(email)
     return {"message": f"Signed up {email} for {activity_name}"}
+
+
+# Unregister endpoint
+@app.post("/activities/{activity_name}/unregister")
+def unregister_from_activity(activity_name: str, email: str):
+    """Remove a student from an activity"""
+    if activity_name not in activities:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    activity = activities[activity_name]
+    if email not in activity["participants"]:
+        raise HTTPException(status_code=404, detail="Student not signed up for this activity")
+    activity["participants"].remove(email)
+    return {"message": f"Removed {email} from {activity_name}"}
 
 
